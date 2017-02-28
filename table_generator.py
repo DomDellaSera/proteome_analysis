@@ -4,6 +4,7 @@ from tabularformatter import disorder_statistics_table_generator
 import logging
 import re
 import os
+#import pdb
 logger = logging.getLogger()
 logging.disable(logging.DEBUG)
 
@@ -38,6 +39,7 @@ def iterative_generation(dir = "tests/b_malayi_reviewed/"):
     #logging.debug(data_Table)
     return(data_Table)
 
+"""
 def protein_Names_From_Fasta(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta"):
     # Purpose:
     #   To scan the fasta header and extract the protein name, gene name , etc
@@ -73,31 +75,44 @@ def protein_Names_From_Fasta(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta
                 except:
                     gene_name=None #Not unifrom dataset
                 gene_ontology.append([filename, protein_name, gene_name])
-        with open('fasta_tmp.fasta', 'w') as tmp:
-            tmp.write(uniprot)
+        #with open('fasta_tmp.fasta', 'w') as tmp:
+         #   tmp.write(uniprot)
             
             
     return(gene_ontology)
+    """
 
-def protein_Name_table_maker(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta"): 
-
+def extract_headers(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta"): 
+    with open(uniprot_fasta) as fasta_raw:
+        fasta_raw = fasta_raw.read()
+        return(re.findall(">.*", fasta_raw))
+    #pdb.set_trace()
     # Purpose:
         #This takes our original fasta from uniprot and tries to return a table with the filename, protein name, and gene name
     # THIS NEEDS HEAVY DEBUGGING -- I'M NOT SURE YET WHAT IT DOES EXACTLY IN RELATION TO THE PRIOR FUNCTION
+def extract_Header_Info(fasta_headers):
+    extracted_Info = []
+    for header in fasta_headers:
+        #print(header)
+        filename=[]
+        split_header = header.split(" ")
+        filename.append(split_header.pop(0))
+        filename = re.findall(">sp\|(.*)\|", header)[0]
+        header_Concat = " ".join(split_header)
+        
+        protein_name = re.findall("(.*\s*.*)\sOS", header_Concat)[0]
+        try:
+            gene_name= re.findall(">sp.*GN=(.*) PE", header)[0]
+        except:
+            gene_name="NaGN"
+        extracted_Info.append([filename,protein_name,gene_name])
+    return(extracted_Info)
     
-    filename =re.findall(">sp\|(.*)\|", uniprot_fasta)[0] 
-    print(filename)
-    #exit()
-    protein_name =re.findall(">sp.*L (.*) OS", uniprot_fasta)[0]
-    try:
-        gene_name= re.findall(">sp.*GN=(.*) PE", uniprot_fasta)[0]
-    except:
-
-        gene_name=""
+def gene_Name_Format_Correction(list_Header):
     gene_name_length=len(gene_name)
     if gene_name in protein_name and gene_name_length!=0:
-        
-        # Many of these fasta files have the gen name inside of them so here I'm searching for a gene name in the 
+
+        # Many of these fasta files have the gen name inside of them so here I'm searching for a gene name in the
         # protein name and extracting it if it exists in two places
         subtractor =len(gene_name)
         length =len(protein_name)
