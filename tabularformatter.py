@@ -4,7 +4,7 @@ import numpy as np
 import logging
 import re
 logger = logging.getLogger()
-logger.setLevel("CRITICAL")
+#logger.setLevel("CRITICAL")
 
 
 
