@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import logging
 import re
+
+
 logger = logging.getLogger()
-#logger.setLevel("CRITICAL")
+
 
 
 
@@ -39,14 +41,10 @@ def disorder_statistics_table_generator(stats_file):
                 
                 stats[count][1] = stats[count][1].split(" ")
         logging.debug(stats)
-        #if error != None
-        #    stats
-        #[float(x[1]) for x in stats]
-        #stats = [x[1].rstrip(" ") for x in stats]
-        #stats = [x.rstrip(" ") for x in stats if " " in x]
+
         logging.debug(stats_file)
         logging.debug(re.findall('.*sp(.*).fasta.stats', stats_file))
-        pro_name = re.findall('.*sp(.*).fasta.stats', stats_file)#stats_file[:-12]    
+        pro_name = re.findall('.*sp(.*).fasta.stats', stats_file)
         
         
         stat_table = pd.DataFrame({"protein" : pd.Series(pro_name, index=list(range(1)), dtype=object),
@@ -56,9 +54,8 @@ def disorder_statistics_table_generator(stats_file):
                                    "fifty_disord" : np.array(stats[3][1], dtype="int32"),
                                    "seg_disord" : np.array(stats[4][1], dtype="int32")#,
                                    #"len_dist" : pd.Series(stats[5][1], dtype="float32")
+                                   #This is actually really important info
                                        
                                   
                                 })
         return(stat_table)
-df=disorder_statistics_table_generator("tests/b_malayi_reviewed/spA8NJZ7.fasta.stats")
-#df.values

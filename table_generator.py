@@ -4,7 +4,9 @@ from tabularformatter import disorder_statistics_table_generator
 import logging
 import re
 import os
-#import pdb
+
+
+
 logger = logging.getLogger()
 logging.disable(logging.DEBUG)
 
@@ -13,13 +15,14 @@ def iterative_generation(dir = "tests/b_malayi_reviewed/"):
     #for each row
     # Input: A directiory location with our stat files
     # Output: A raw table of the data from the statistics
+    
     from getfilenames import stats_File_Names 
     file_Names = stats_File_Names()
     logging.debug(file_Names)
     problem_proteins = []
     data_Table = None
+    
     for i in file_Names:
-        #print(i)
                     
         protein=i.rstrip()
         protein = dir+protein
@@ -36,69 +39,28 @@ def iterative_generation(dir = "tests/b_malayi_reviewed/"):
         except:
             data_Table = single_row
         
-    logging.debug(problem_proteins)
-    #logging.debug(data_Table)
+
     return(data_Table)
 
-"""
-def protein_Names_From_Fasta(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta"):
-    # Purpose:
-    #   To scan the fasta header and extract the protein name, gene name , etc
-    # Input:
-    #   Fasta file with headers in Uniprot format
-    # Output:
-    #   temporary fast file is written to tmp THIS MAY BE PUSHING SAND AROUND
-    #   list containing the following:
-    #        [filename, protein_name, gene name]
-    # ##################################################################################
-    
-    
-    with open(uniprot_fasta) as uniprot:
-        uniprot = uniprot.readlines()
-        counter = 0
-        gene_ontology=None
-        filename=None
-        protein_name=None
-        gene_name=None
-        gene_ontology=[]
-        
-        #print(re.findall(">.*", uniprot))
-        for i in uniprot[0:]: 
-            
-            if i.startswith(">") is True: #Finds the fasta header
-                print(filename)
-                #exit()
-                filename =re.findall(">sp\|(.*)\|", i)[0] #regex: everything in between the |
-                protein_name =re.findall(">sp.*L (.*) OS", i)[0]# regex: From L to the naming of the organism(i.e. the protein name)
-                #
-                try:#
-                    gene_name= re.findall(">sp.*GN=(.*) PE", i)[0] #Try assign gene names to variable
-                except:
-                    gene_name=None #Not unifrom dataset
-                gene_ontology.append([filename, protein_name, gene_name])
-        #with open('fasta_tmp.fasta', 'w') as tmp:
-         #   tmp.write(uniprot)
-            
-            
-    return(gene_ontology)
-    """
 
 def extract_headers(uniprot_fasta = "fasta/brugia_malayi_reviewed.fasta"): 
-    with open(uniprot_fasta) as fasta_raw:
+                                                                          
+# Purpose: To scan the fasta header and extract the protein name, gene name , etc
+# Input: Fasta file | Output: Fasta header -'>sp|P27541|HSP70_BRUMA Heat sn OS=Brugia malayi GN=HSP70 PE=3 SV=1'
+    
+    with open(uniprot_fasta) as fasta_raw:  
+
         fasta_raw = fasta_raw.read()
-        return(re.findall(">.*", fasta_raw))
-    #pdb.set_trace()
-    # Purpose:
-        #This takes our original fasta from uniprot and tries to return a table with the filename, protein name, and gene name
-    # THIS NEEDS HEAVY DEBUGGING -- I'M NOT SURE YET WHAT IT DOES EXACTLY IN RELATION TO THE PRIOR FUNCTION
-def extract_Header_Info(fasta_headers):
+        return(re.findall(">.*", fasta_raw))            
+
+def extract_Header_Info(fasta_headers): #Input: Fasta Header; Output [filename, protein_name, gene name]
     extracted_Info = []
     for header in fasta_headers:
-        #print(header)
         filename=[]
         split_header = header.split(" ")
         filename.append(split_header.pop(0))
         filename = re.findall(">sp\|(.*)\|", header)[0]
+        
         header_Concat = " ".join(split_header)
         
         protein_name = re.findall("(.*\s*.*)\sOS", header_Concat)[0]
@@ -149,20 +111,39 @@ def main_FileCleaning_Function(FPG = list):#Control flow for the aboe
             
             
 
-def main_protein_table_writer(uniprot = 'fasta_tmp.fasta', output = 'brugia_malayi_reviewed_MainDataTable.csv'):
+def main_protein_table_writer(uniprot = 'fasta_tmp.fasta', output = 'b_malayi_reviewed_Meta.csv'):
     handle = open(output, "w")
     for i in uniprot[:]:
         if i.startswith(">") is True:
         
-            
             protein_writer = csv.writer(handle, delimiter=",")
-           
             row = protein_table_maker(i)
-            
             separated_row = row.split("|")
-            
             protein_writer.writerow(separated_row)
+    
     handle.close()
+    
+def initialize_Protein_Disorder_Metrics(disorder_statistics = pd.DataFrame):
+    with open('disorder_statistics.csv', 'w') as df:
+        disorder_statistics.to_csv(df)
+        return()
+
+def dataFrameMerge(data_table = 'disorder_statistics.csv', metadata = 'b_malayi_reviewed_Meta.csv'):
+    
+    data_handle = open(data_table)
+    meta_handle = open(metadata)
+    
+    unreferenced_data = pd.read_csv(data_handle)
+    metaData = pd.read_csv(metadata)
+    
+    associative_Table = pd.merge(metaData,unreferenced_data, on = 'protein')
+    with open('final_Data_Table.csv') as final_Table:
+        associative_Table.to_csv(final_Table)
+        
+    data_handle.close()
+    meta_handle.close()
+    
+    
 
 
 
