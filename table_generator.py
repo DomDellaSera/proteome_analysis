@@ -9,7 +9,8 @@ logger = logging.getLogger()
 logging.disable(logging.DEBUG)
 
 def iterative_generation(dir = "tests/b_malayi_reviewed/"):
-    #This file is running a for loop to generate the table by calling disorder_statistics_table_generator for each row
+    #This file is running a for loop to generate the table by calling disorder_statistics_table_generator 
+    #for each row
     # Input: A directiory location with our stat files
     # Output: A raw table of the data from the statistics
     from getfilenames import stats_File_Names 
@@ -104,28 +105,52 @@ def extract_Header_Info(fasta_headers):
         try:
             gene_name= re.findall(">sp.*GN=(.*) PE", header)[0]
         except:
-            gene_name="NaGN"
+            gene_name="NaN"
         extracted_Info.append([filename,protein_name,gene_name])
     return(extracted_Info)
     
-def gene_Name_Format_Correction(list_Header):
-    gene_name_length=len(gene_name)
-    if gene_name in protein_name and gene_name_length!=0:
 
-        # Many of these fasta files have the gen name inside of them so here I'm searching for a gene name in the
-        # protein name and extracting it if it exists in two places
-        subtractor =len(gene_name)
-        length =len(protein_name)
-        #old_protein_name = protein_name
-        #print(protein_name)
-        protein_name = protein_name[0:length-subtractor]
-    #print(gene_name)
-                    
-    return(filename+"|"+ protein_name+"|"+ gene_name)
+class UniprotHeaderList: #This is for later;don't wanna break the code
+    def __init__(self, file_name,protein,gene):
+        self.file_name = file_name
+        self.protein = protein
+        self.gene = gene
+        
+
+        
+
+def remove_Duplicate_Gene_Names(protein = str, gene = str):#THIS IS TO BE LOOPED
+    #Gene names were either duplicates in the header name, or were not available
+
+    protein_name = [x.split() for x in protein_name]
+    protein_name = {protein_name}-{gene_name}
+        
+    return(protein_name)
     
     
+def main_FileCleaning_Function(FPG = list):#Control flow for the aboe
+    
+    metadata = []
+    
+
+    for header in FPG:
+        file_name,protein_name,gene_name = header
+        
+        if gene_name in protein_name and len(gene_name)!=0:
+            
+            protein_name = remove_Duplicate_Gene_Names(FPG)
+        elif gene_name not in header[1]
+            continue
+        metadata.append([file_name +"/"+protein_name+"/"+gene_name])
+    
+    return(metadata)
+        
+        
+            
+            
+
 def main_protein_table_writer(uniprot = 'fasta_tmp.fasta', output = 'brugia_malayi_reviewed_MainDataTable.csv'):
-    handle = open(output, "a")
+    handle = open(output, "w")
     for i in uniprot[:]:
         if i.startswith(">") is True:
         

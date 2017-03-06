@@ -1,6 +1,9 @@
 import unittest
 import pandas as pd
 import numpy as np
+import logging 
+
+
 
 
 #rom re_comp import translation, reverse_complement,reading_frame_generator, reading_frame_translator,peptide_frame_chooser
@@ -21,6 +24,46 @@ class generate_Headers_From_FastaTestCase(unittest.TestCase):
 
         ss_Headers = subsetted_Headers()
         self.assertEqual(extract_Header_Info(headers),ss_Headers)
+
+class assure_Header_Formatting_is_LosslessTestCase(unittest.TestCase):
+    #Fairly heavy editing/regexing of Fasta headers was going on, so this is 
+    #assuring that thing was missing. It's hard to make a test for this sort of stuff,
+    #as it's mostly eyeballing
+        def test_formatted_header_in_raw_header(self):
+            from cache import truncated_Headers,getHeaders
+            control = truncated_Headers()
+            # Constant - same as above, except >sp|P90689|ACT_BRUMA is taken out
+            
+            
+            raw_Headers = getHeaders()
+
+            subsetted_Headers = extract_Header_Info(raw_Headers)
+            outputWithPadding = [[x[1], " "*(70-len(x[1]))] for x in subsetted_Headers]
+            
+            outputToTest = [x[0] for x in outputWithPadding]
+            #control = control[0]
+            logging.debug(control,outputToTest)
+            
+            
+            for i in range(len(control)):
+                
+                self.assertIn(outputToTest[i],control[i])
+                
+                #Making sure parameters are taken out
+                self.assertNotIn('OS=',outputToTest[i])
+                self.assertNotIn('GN=',outputToTest[i])
+                self.assertNotIn('PE=',outputToTest[i])
+                self.assertNotIn('SV=',outputToTest[i])
+                self.assertNotIn('malayi',outputToTest[i])
+                
+                #Test Validation
+                
+                self.assertIn('OS',control[i])
+                self.assertIn('malayi',control[i])
+                
+          
+    
+    
 
 class createPandaTableTestCase(unittest.TestCase):
     def test_produces_single_row(self):
